@@ -1,4 +1,5 @@
 import os
+import tensorflow as tf
 
 def descompress_data(zip, file = None, folder = None):
     '''
@@ -30,3 +31,26 @@ def descompress_data(zip, file = None, folder = None):
     move_file = f"mv {file} {folder}/{file}"
     os.system(move_file)
     return f"Your file is descompressed. Great!!"
+
+def load_transform(image, label, train = True):
+    image = tf.io.read_file(image)
+    image = tf.io.decode_jpeg(image, channels = 3)
+    image = tf.image.resize(image, [224, 224], method = "nearest")
+
+    if train:
+        image = tf.image.random_flip_left_right(image)
+    
+    return image, label 
+
+def get_dataset(paths, labels, batch_size, train = True):
+    image_paths = tf.convert_to_tensor(paths)
+    labels = tf.convert_to_tensor(labels)
+
+    image_dataset = tf.data.Dataset.from_tensor_slices(image_paths)
+    label_dataset = tf.data.Dataset.from_tensor_slices(labels)
+
+    dataset = tf.data.Dataset.zip((image_dataset, label_dataset)).shuffle(1000)
+
+    dataset = dataset.map(lambda image, label: load_transform(image, label, train)).repeat().shuffle(20480).batch(batch_size)
+
+    return dataset
