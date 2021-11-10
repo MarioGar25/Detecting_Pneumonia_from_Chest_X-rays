@@ -32,6 +32,9 @@ def descompress_data(zip, file = None, folder = None):
     os.system(move_file)
     return f"Your file is descompressed. Great!!"
 
+def get_labels(labels: dict, path: str) -> int:
+    return labels[path.split("\\")[-2]]
+
 def load_transform(image, label, train = True):
     image = tf.io.read_file(image)
     image = tf.io.decode_jpeg(image, channels = 3)
